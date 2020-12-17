@@ -13,7 +13,7 @@
 
 RenderWidget::RenderWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      mesh(Mesh(30, 30, 0.05, 1.f, 20)),
+      mesh(Mesh(30, 30, 0.2f, 1.f, 20, 0.05, 0.02, glm::vec3(0.0f), glm::vec3(0.0f))),
       program(nullptr) {
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -79,7 +79,7 @@ void RenderWidget::paintGL()
     if (m_frameCount == 0) {
          m_time.start();
     } else {
-        qDebug() << "FPS: " << 1000.0f * float(m_frameCount) / m_time.elapsed();
+        qDebug() << "time: " << m_time.elapsed() / (1000.0f * float(m_frameCount));
     }
     m_frameCount++;
 
@@ -225,9 +225,9 @@ void RenderWidget::createMesh()
         }
     }
 
-    for (int j = 0; j < m-1; ++j) {
-        for (int i = 0; i < n-1; ++i) {
-            int k = j*m + i;
+    for (int i = 0; i < n-1; ++i) {
+        for (int j = 0; j < m-1; ++j) {
+            int k = i*m + j;
             indices.push_back(k);
             indices.push_back(k+m+1);
             indices.push_back(k+m);
@@ -243,7 +243,9 @@ void RenderWidget::updateMesh()
 {
     QTime time = QTime::currentTime();
     float sin_t = glm::sin(0.5*time.msecsSinceStartOfDay());
-    mesh.oneStep(1./60., 0.02, glm::vec3(0.0, -10.0f, 10.0f * sin_t));
+    mesh.setForce(glm::vec3(0.0, -10.0f, 10.0f * sin_t));
+    mesh.oneStep();
+
     int n = mesh.n, m = mesh.m;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
@@ -253,9 +255,9 @@ void RenderWidget::updateMesh()
         }
     }
 
-    for (int j = 0; j < m-1; ++j) {
-        for (int i = 0; i < n-1; ++i) {
-            int k = j*m + i;
+    for (int i = 0; i < n-1; ++i) {
+        for (int j = 0; j < m-1; ++j) {
+            int k = i*m + j;
             glm::vec3 v1 = vbo[k+1].pos - vbo[k].pos;
             glm::vec3 v2 = vbo[k+m+1].pos - vbo[k].pos;
             glm::vec3 n1 = glm::cross(v1, v2);

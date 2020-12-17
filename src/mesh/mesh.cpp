@@ -20,13 +20,23 @@ void Mesh::createBarIfNotExist(int n, int m, int i, int j, int k, int l) {
     }
 }
 
-Mesh::Mesh(int n, int m, float mass, float barLength, int n_relaxations) {
+Mesh::Mesh(int n, int m,
+           float mass,
+           float barLength,
+           int n_relaxations,
+           float h,
+           float delta,
+           glm::vec3 force = glm::vec3(0.0f),
+           glm::vec3 initialVelocity = glm::vec3(0.0f)) {
     Particle p = Particle(mass, glm::vec3(0.0f), false);
     particles.assign(n, std::vector<Particle>(m, p));
     this->force = glm::vec3(0.0f);
     this->n = n;
     this->m = m;
     this->n_relaxations = n_relaxations;
+    this->h = h;
+    this->delta = delta;
+    this->force = force;
 
     glm::vec3 initialPosition = glm::vec3(-(0.5f * (n-1.0f)) * (barLength), -(0.5f * (m-1.0f)) * (barLength), 0.0f);
 
@@ -34,11 +44,14 @@ Mesh::Mesh(int n, int m, float mass, float barLength, int n_relaxations) {
     particles[n-1][m-1].isFixed = true;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
-//            particles[0][j].isFixed = true;
-            particles[i][j].position = initialPosition + glm::vec3((1.0f * i) * (barLength), 
-                                                                    (1.0f * j) * (barLength), 
-                                                                     0.0f );
-            particles[i][j].previousPosition = particles[i][j].position;
+            particles[i][j].previousPosition = initialPosition + glm::vec3((1.0f * i) * (barLength),
+                                                                           (1.0f * j) * (barLength),
+                                                                           0.0f );
+            if (particles[i][j].isFixed) {
+                particles[i][j].position = particles[i][j].previousPosition;
+            } else {
+                particles[i][j].position = particles[i][j].previousPosition + h*initialVelocity;
+            }
         }
     }
 
@@ -90,15 +103,6 @@ void Mesh::oneStep(float h, float delta, glm::vec3 force) {
     }
 }
 
-void Mesh::oneStep(float h, float delta) {
-    oneStep(h, delta, this->force);
-}
-
-void Mesh::simulate() {
-    float h = 1e-2;
-    float delta = 0.02;
-
-    for (int i = 0; i < 1000; ++i) {
-        oneStep(h, delta);
-    }
+void Mesh::oneStep() {
+    oneStep(this->h, this->delta, this->force);
 }

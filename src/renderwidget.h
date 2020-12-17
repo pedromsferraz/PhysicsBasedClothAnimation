@@ -6,6 +6,9 @@
 #include <QOpenGLShaderProgram>
 #include <QVector3D>
 #include <QMatrix4x4>
+#include <QTimer>
+#include <QTime>
+#include <QElapsedTimer>
 
 #include <vector>
 
@@ -29,6 +32,9 @@ private:
     virtual void mouseReleaseEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
+
+    QTimer timer;
+    QElapsedTimer elapsedTimer;
 
     glm::vec3 eye;
     glm::vec3 center;
@@ -58,6 +64,13 @@ private:
     unsigned int VAO;
     unsigned int VBO;
     unsigned int EBO;
+    struct vertex
+    {
+        glm::vec3 pos;
+        glm::vec3 normal;
+//        glm::vec2 texCoord;
+    };
+    std::vector< vertex > vbo;
     std::vector< glm::vec3 > vertices;
     std::vector< glm::vec3 > normals;
     std::vector< glm::vec2 > texCoords;

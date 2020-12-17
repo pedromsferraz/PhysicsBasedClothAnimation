@@ -31,9 +31,9 @@ Mesh::Mesh(int n, int m, float mass, float barLength) {
     glm::vec3 initialPosition = glm::vec3(-(0.5f * (n-1.0f)) * (barLength), -(0.5f * (m-1.0f)) * (barLength), 0.0f);
 
     for (int i = 0; i < n; ++i) {
-        particles[i][0].isFixed = true;
-        previousParticles[i][0].isFixed = true;
         for (int j = 0; j < m; ++j) {
+            particles[0][j].isFixed = true;
+            previousParticles[0][j].isFixed = true;
             particles[i][j].position = initialPosition + glm::vec3((1.0f * i) * (barLength), 
                                                                     (1.0f * j) * (barLength), 
                                                                      0.0f );
@@ -101,7 +101,7 @@ void Mesh::simulate() {
     float h = 1e-2;
     float delta = 0.02;
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         oneStep(h, delta);
     }
 }

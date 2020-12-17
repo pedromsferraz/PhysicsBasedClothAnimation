@@ -25,5 +25,5 @@ void main()
 
     fragNormal = (mv_ti * vec4( vertexNormal, 1 ) ).xyz;
 
-    fragUV = vertexTexCoord;
+//    fragUV = vertexTexCoord;
 }

@@ -5,7 +5,6 @@
 #include <QGLWidget>
 #include <glm/ext.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <cmath>
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
@@ -13,8 +12,23 @@
 
 RenderWidget::RenderWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      mesh(Mesh(100, 100, 0.1, 1.0)),
-      program(nullptr) { }
+      mesh(Mesh(7, 7, 0.1, 10.0)),
+      program(nullptr) {
+
+    connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
+    if(format().swapInterval() == -1)
+    {
+        // V_blank synchronization not available (tearing likely to happen)
+        qDebug("Swap Buffers at v_blank not available: refresh at approx 60fps.");
+        timer.setInterval(17);
+    }
+    else
+    {
+        // V_blank synchronization available
+        timer.setInterval(0);
+    }
+    timer.start();
+}
 
 RenderWidget::~RenderWidget()
 {
@@ -33,8 +47,8 @@ void RenderWidget::initializeGL()
     glViewport(0, 0, width(), height());
 
     //Compilar os shaders
-    program.addShaderFromSourceFile(QOpenGLShader::Vertex, "/Users/pedroferraz/Desktop/Verlet/OpenGL/src/vertexshader.glsl");
-    program.addShaderFromSourceFile(QOpenGLShader::Fragment, "/Users/pedroferraz/Desktop/Verlet/OpenGL/src/fragmentshader.glsl");
+    program.addShaderFromSourceFile(QOpenGLShader::Vertex, "/Users/pedroferraz/Documents/Repositorios/Analise-Numerica-Tecido/src/vertexshader.glsl");
+    program.addShaderFromSourceFile(QOpenGLShader::Fragment, "/Users/pedroferraz/Documents/Repositorios/Analise-Numerica-Tecido/src/fragmentshader.glsl");
     program.link();
 
     this->eye = glm::vec3(4.0f, 4.0f, 5.0f);
@@ -47,14 +61,14 @@ void RenderWidget::initializeGL()
     proj = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
 
     //Cena de cubos
-    createCube();
+//    createCube();
 //    createTexture("../src/cube_texture.png");
 
     //Cena de esferas
 //    createSphere();
 //    createTexture("../src/sphere_texture.jpg");
 
-//    createMesh();
+    createMesh();
 
     //Criar VBO e VAO
     createVBO();
@@ -100,7 +114,7 @@ void RenderWidget::paintGL()
     program.setUniformValue("sampler", 0);
 
     //Passar as matrizes mv e mvp
-    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(0.05f, 0.05f, 0.05f))));
+    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(0.05f))));
 
     //QMatrix4x4 mv = v * m * sphereModel;
     QMatrix4x4 mv = v * scale * m;
@@ -111,10 +125,11 @@ void RenderWidget::paintGL()
     program.setUniformValue("mvp", mvp);
 
     //Desenhar
+    elapsedTimer.start();
+    updateMesh();
+    qDebug() << elapsedTimer.elapsed();
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, nullptr);
-
-//    mesh.oneStep(1e-4, 0.02, glm::vec3(0.0f, 0.0f, -1.0f));
-//    updateMesh();
 }
 
 void RenderWidget::resizeGL(int w, int h)
@@ -210,8 +225,8 @@ void RenderWidget::createMesh()
         }
     }
 
-    for (int j = 0; j < m; ++j) {
-        for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m-1; ++j) {
+        for (int i = 0; i < n-1; ++i) {
             int k = j*m + i;
             indices.push_back(k);
             indices.push_back(k+m+1);
@@ -226,14 +241,21 @@ void RenderWidget::createMesh()
 
 void RenderWidget::updateMesh()
 {
+    QTime time = QTime::currentTime();
+    float sin_t = glm::sin(0.005*time.msecsSinceStartOfDay());
+    mesh.oneStep(0.1, 0.02, glm::vec3(0.0f, -10.0f, 3.5f*sin_t));
     int n = mesh.n, m = mesh.m;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
             int k = i*m + j;
             vertices[k] = mesh.particles[i][j].position;
-            printf("%.5f %.5f %.5f\n", vertices[k].x, vertices[k].y, vertices[k].z);
+            vbo[k].pos = mesh.particles[i][j].position;
         }
     }
+
+    void *ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    memcpy(ptr, &vbo[0], vbo.size() * sizeof(vertex));
+    glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
 void RenderWidget::createCube()
@@ -351,14 +373,7 @@ void RenderWidget::createVBO()
 {
     //Construir vetor do vbo
     //OBS: Os dados já poderiam estar sendo armazenados assim na classe.
-    struct vertex
-    {
-        glm::vec3 pos;
-        glm::vec3 normal;
-//        glm::vec2 texCoord;
-    };
 
-    std::vector< vertex > vbo;
     vbo.reserve( vertices.size() );
     for( unsigned int i = 0; i < vertices.size(); i++ )
     {

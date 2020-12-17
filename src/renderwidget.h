@@ -9,7 +9,6 @@
 #include <QTimer>
 #include <QTime>
 #include <QElapsedTimer>
-
 #include <vector>
 
 #include "glm/glm.hpp"
@@ -33,13 +32,17 @@ private:
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
 
+    // Timers and frame count for debugging
     QTimer timer;
-    QElapsedTimer elapsedTimer;
+    QElapsedTimer m_time;
+    int m_frameCount = 0;
 
+    // Camera information
     glm::vec3 eye;
     glm::vec3 center;
     glm::vec3 up;
 
+    // Mesh
     Mesh mesh;
 
     // Arcball
@@ -52,10 +55,9 @@ private:
     glm::quat pointToQuat(glm::ivec2 screenPoint);
     void rotate(glm::ivec2 p1, glm::ivec2 p2);
 
+    // Mesh and vertex functions
     void createMesh();
     void updateMesh();
-    void createCube();
-    void createSphere();
     void createVBO();
     void createTexture(const std::string& imagePath);
 

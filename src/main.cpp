@@ -4,10 +4,9 @@
 
 int main(int argc, char *argv[])
 {
-    //Necessario em MacOS
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
-    format.setVersion( 3, 3 ); //versao OpenGL
+    format.setVersion( 3, 3 );
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);

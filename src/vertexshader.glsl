@@ -3,18 +3,18 @@
 layout( location = 0 ) in vec3 vertexPos;
 layout( location = 1 ) in vec3 vertexNormal;
 
-//Coordenadas de textura
+// Texture coordinates
 layout( location = 2 ) in vec2 vertexTexCoord;
 
 uniform mat4 mvp;
 uniform mat4 mv;
-uniform mat4 mv_ti; //inversa transposta da MV
+uniform mat4 mv_ti; // transpose inverse of MV
 
-//Posição e normal no espaço da câmera
+// Position and normal coordinates in View Space
 out vec3 fragPos;
 out vec3 fragNormal;
 
-//Coordenadas de textura do fragmento
+// Fragment texture coordinates
 out vec2 fragUV;
 
 void main()

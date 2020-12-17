@@ -6,6 +6,7 @@
 #include <glm/ext.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
+
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
 #endif
@@ -32,47 +33,46 @@ RenderWidget::RenderWidget(QWidget *parent)
 
 RenderWidget::~RenderWidget()
 {
-    //Delete OpenGL resources
+    // Delete OpenGL resources
 }
 
 void RenderWidget::initializeGL()
 {
-    //Initializa as funções OpenGL
+    // Initialize OpenGL functions
     initializeOpenGLFunctions();
 
-    //Define a cor do fundo
+    // Define background color
     glClearColor(0.1f,0.1f,0.1f,1);
 
-    //Define a viewport
+    // Define viewport
     glViewport(0, 0, width(), height());
 
-    //Compilar os shaders
+    // Compile shaders
     program.addShaderFromSourceFile(QOpenGLShader::Vertex, "/Users/pedroferraz/Documents/Repositorios/Analise-Numerica-Tecido/src/vertexshader.glsl");
     program.addShaderFromSourceFile(QOpenGLShader::Fragment, "/Users/pedroferraz/Documents/Repositorios/Analise-Numerica-Tecido/src/fragmentshader.glsl");
     program.link();
 
+    // Configure camera
     this->eye = glm::vec3(4.0f, 4.0f, 5.0f);
     this->center = glm::vec3(0.0f, 0.0f, 0.0f);
     this->up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    //Definir matriz view e projection
+    // Define view and projection matrices
     float ratio = static_cast<float>(width())/height();
     view = glm::lookAt(eye, center, up);
     proj = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
 
+    // Create mesh vertices, normals and texture
     createMesh();
 
-    //Criar VBO e VAO
+    // Create VBO
     createVBO();
 
-    // Inicializa arcball
+    // Initialize arcball
     initializeArcball();
-
     moving = true;
 }
 
-QElapsedTimer m_time;
-int m_frameCount = 0;
 
 void RenderWidget::paintGL()
 {
@@ -83,41 +83,42 @@ void RenderWidget::paintGL()
     }
     m_frameCount++;
 
-    //Habilita o teste de Z
+    // Enable Z test
     glEnable(GL_DEPTH_TEST);
 
-    //Limpar a tela
+    // Clear screen
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-    //Linkar o VAO
+    // Link VAO
     glBindVertexArray(VAO);
 
-    //Linkar o programa e passar as uniformes:
-    //Matriz
-    //Posição da luz
-    //Ambiente, difusa, especular e brilho do material
+    // Bind program e pass the following uniforms:
+    // Matrices
+    // Light position
+    // Ambient, diffuse, specular e shininess components of the material
     program.bind();
 
     QMatrix4x4 m(glm::value_ptr(glm::transpose(model)));
     QMatrix4x4 v(glm::value_ptr(glm::transpose(view)));
     QMatrix4x4 p(glm::value_ptr(glm::transpose(proj)));
 
-    //Passar as uniformes da luz e do material
+    // Pass light and material uniforms
     program.setUniformValue("light.position", v*QVector3D(0,-1,-5) );
     program.setUniformValue("material.ambient", QVector3D(0.15f,0.15f,0.15f));
     program.setUniformValue("material.diffuse", QVector3D(1.0f,0.5f,1.0f));
     program.setUniformValue("material.specular", QVector3D(1.0f,1.0f,1.0f));
     program.setUniformValue("material.shininess", 24.0f);
 
-    //Ativar e linkar a textura
+    // Activate and bind texture
 //    glActiveTexture(GL_TEXTURE0);
 //    glBindTexture(GL_TEXTURE_2D, textureID);
 //    program.setUniformValue("sampler", 0);
 
-    //Passar as matrizes mv e mvp
+    // Scale matrix for resizing mesh
     QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(.15f))));
 
-    //QMatrix4x4 mv = v * m * sphereModel;
+    // Pass mv and mvp matrices
+    // QMatrix4x4 mv = v * m * sphereModel;
     QMatrix4x4 mv = v * scale * m;
     QMatrix4x4 mvp = p * mv;
 
@@ -125,8 +126,7 @@ void RenderWidget::paintGL()
     program.setUniformValue("mv_ti", mv.inverted().transposed());
     program.setUniformValue("mvp", mvp);
 
-    //Desenhar
-    elapsedTimer.start();
+    // Update mesh and draw
     updateMesh();
 //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, nullptr);
@@ -134,10 +134,10 @@ void RenderWidget::paintGL()
 
 void RenderWidget::resizeGL(int w, int h)
 {
-    //Atualizar a viewport
+    // Update viewport
     glViewport(0, 0, w, h);
 
-    //Atualizar a matriz de projeção
+    // Update projection matrix
     float ratio = static_cast<float>(w)/h;
     proj = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
 
@@ -285,8 +285,7 @@ void RenderWidget::updateMesh()
 
 void RenderWidget::createVBO()
 {
-    //Construir vetor do vbo
-    //OBS: Os dados já poderiam estar sendo armazenados assim na classe.
+    // Construct VBO vector
 
     vbo.reserve( vertices.size() );
     for( unsigned int i = 0; i < vertices.size(); i++ )
@@ -295,21 +294,21 @@ void RenderWidget::createVBO()
         vbo.push_back({vertices[i], normals[i]});
     }
 
-    //Criar VBO, linkar e copiar os dados
+    // Create and bind VBO and copy data
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vbo.size() * sizeof(vertex), &vbo[0], GL_DYNAMIC_DRAW);
 
-    //Criar EBO, linkar e copiar os dados
+    // Create and bind EBO and copy data
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_DYNAMIC_DRAW);
 
-    //Criar VAO, linkar e definir layouts
+    // Create and bind EBO and define layouts
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    //Habilitar, linkar e definir o layout dos buffers
+    // Enable, bind and define buffer layout
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glEnableVertexAttribArray( 0 );
@@ -321,26 +320,26 @@ void RenderWidget::createVBO()
 //    glEnableVertexAttribArray( 2 );
 //    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*) (2*sizeof(glm::vec3)) );
 
-    //Linkar o EBO
+    // Bind EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 }
 
 
 void RenderWidget::createTexture(const std::string& imagePath)
 {
-    //Criar a textura
+    // Create texture
     glGenTextures(1, &textureID);
     
-    //Linkar (bind) a textura criada
+    // Bind created texture
     glBindTexture(GL_TEXTURE_2D, textureID);
     
-    //Abrir arquivo de imagem com o Qt
+    // Open image file with QT
     QImage texImage = QGLWidget::convertToGLFormat(QImage(imagePath.c_str()));
 
-    //Enviar a imagem para o OpenGL
+    // Send image to OpenGL
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texImage.width(), texImage.height(), 0, GL_RGBA,GL_UNSIGNED_BYTE, texImage.bits());
 
-    //Definir parametros de filtro e gerar mipmap
+    // Define filter parameters and generate mipmap
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 

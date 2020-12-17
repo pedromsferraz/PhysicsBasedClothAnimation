@@ -10,7 +10,7 @@ struct Material
 
 struct Light
 {
-    vec3 position; //No espaço da câmera
+    vec3 position; // Position in View Space
 };
 
 uniform Light light;
@@ -38,7 +38,7 @@ void main()
     if (iDif > 0) {
         diffuse = iDif * material.diffuse;// * texture(sampler, fragUV).rgb;
 
-        vec3 V = normalize(-fragPos); //V = eye - fragPos, mas, como estamos no espaço de view, eye = (0,0,0)
+        vec3 V = normalize(-fragPos);
         vec3 H = normalize(L + V);
 
         float iSpec = pow(max(dot(N, H), 0.0), material.shininess);

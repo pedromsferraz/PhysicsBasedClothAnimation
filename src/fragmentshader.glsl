@@ -27,8 +27,8 @@ out vec3 finalColor;
 void main()
 {
     vec3 ambient = material.ambient;// * texture(sampler, fragUV).rgb;
-    vec3 diffuse = vec3(1.0, 1.0, 1.0);
-    vec3 specular = vec3(0.0, 0.0, 0.0);
+    vec3 diffuse = vec3(0.0f);
+    vec3 specular = vec3(0.0f);
 
     vec3 N = normalize(fragNormal);
     vec3 L = normalize(light.position - fragPos);
@@ -46,6 +46,4 @@ void main()
     }
 
     finalColor = ambient + diffuse + specular;
-
-    finalColor = vec3(1.0f);
 }

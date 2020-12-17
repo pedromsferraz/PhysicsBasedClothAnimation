@@ -113,14 +113,14 @@ void RenderWidget::paintGL()
     //Passar as uniformes da luz e do material
     program.setUniformValue("light.position", v*QVector3D(5,9,-5) );
     program.setUniformValue("material.ambient", QVector3D(0.1f,0.1f,0.1f));
-    program.setUniformValue("material.diffuse", QVector3D(1.0f,1.0f,1.0f));
+    program.setUniformValue("material.diffuse", QVector3D(1.0f,0.5f,1.0f));
     program.setUniformValue("material.specular", QVector3D(1.0f,1.0f,1.0f));
     program.setUniformValue("material.shininess", 24.0f);
 
     //Ativar e linkar a textura
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    program.setUniformValue("sampler", 0);
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, textureID);
+//    program.setUniformValue("sampler", 0);
 
     //Passar as matrizes mv e mvp
     QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(0.15f))));
@@ -136,7 +136,7 @@ void RenderWidget::paintGL()
     //Desenhar
     elapsedTimer.start();
     updateMesh();
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, nullptr);
 }
 
@@ -256,8 +256,33 @@ void RenderWidget::updateMesh()
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
             int k = i*m + j;
-            vertices[k] = mesh.particles[i][j].position;
             vbo[k].pos = mesh.particles[i][j].position;
+            vbo[k].normal = glm::vec3(0.0f);
+        }
+    }
+
+    for (int j = 0; j < m-1; ++j) {
+        for (int i = 0; i < n-1; ++i) {
+            int k = j*m + i;
+            glm::vec3 v1 = vbo[k+1].pos - vbo[k].pos;
+            glm::vec3 v2 = vbo[k+m+1].pos - vbo[k].pos;
+            glm::vec3 n1 = glm::cross(v1, v2);
+            vbo[k].normal += n1;
+            vbo[k+1].normal += n1;
+            vbo[k+m+1].normal += n1;
+
+            glm::vec3 v3 = vbo[k+m].pos - vbo[k].pos;
+            glm::vec3 n2 = glm::cross(v2, v3);
+            vbo[k].normal += n2;
+            vbo[k+m+1].normal += n2;
+            vbo[k+m].normal += n2;
+        }
+    }
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            int k = i*m + j;
+            vbo[k].normal = glm::normalize(vbo[k].normal);
         }
     }
 

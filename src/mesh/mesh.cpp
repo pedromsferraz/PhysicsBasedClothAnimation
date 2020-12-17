@@ -83,7 +83,7 @@ void Mesh::oneStep(float h, float delta, glm::vec3 force) {
         }
     }
 
-    while (!isDone) {
+    for (int i = 0; !isDone && i < 20; ++i) {
         isDone = true;
         for (auto &bar : bars) {
             bool isRelaxed = bar.update();

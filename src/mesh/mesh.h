@@ -11,7 +11,7 @@ class Mesh {
     std::vector<Bar> bars;
     std::set<edge> edges;
     glm::vec3 force;
-    float tolerance = 2e-1;
+    float tolerance = 1e-2;
 
     bool inBounds(int n, int m, int i, int j);
     void createBarIfNotExist(int n, int m, int i, int j, int k, int l);

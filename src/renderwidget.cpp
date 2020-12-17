@@ -12,7 +12,7 @@
 
 RenderWidget::RenderWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      mesh(Mesh(7, 7, 0.1, 10.0)),
+      mesh(Mesh(30, 30, 0.05, 1.0)),
       program(nullptr) {
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -79,9 +79,18 @@ void RenderWidget::initializeGL()
     moving = true;
 }
 
+QElapsedTimer m_time;
+int m_frameCount = 0;
 
 void RenderWidget::paintGL()
 {
+    if (m_frameCount == 0) {
+         m_time.start();
+    } else {
+        qDebug() << "FPS: " << 1000.0f * float(m_frameCount) / m_time.elapsed();
+    }
+    m_frameCount++;
+
     //Habilita o teste de Z
     glEnable(GL_DEPTH_TEST);
 
@@ -114,7 +123,7 @@ void RenderWidget::paintGL()
     program.setUniformValue("sampler", 0);
 
     //Passar as matrizes mv e mvp
-    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(0.05f))));
+    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(0.15f))));
 
     //QMatrix4x4 mv = v * m * sphereModel;
     QMatrix4x4 mv = v * scale * m;
@@ -127,7 +136,6 @@ void RenderWidget::paintGL()
     //Desenhar
     elapsedTimer.start();
     updateMesh();
-    qDebug() << elapsedTimer.elapsed();
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, nullptr);
 }
@@ -242,8 +250,8 @@ void RenderWidget::createMesh()
 void RenderWidget::updateMesh()
 {
     QTime time = QTime::currentTime();
-    float sin_t = glm::sin(0.005*time.msecsSinceStartOfDay());
-    mesh.oneStep(0.1, 0.02, glm::vec3(0.0f, -10.0f, 3.5f*sin_t));
+    float sin_t = glm::sin(0.05*time.msecsSinceStartOfDay());
+    mesh.oneStep(0.02, 0.02, glm::vec3(1.0f, -10.0f, 1.0f));
     int n = mesh.n, m = mesh.m;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {

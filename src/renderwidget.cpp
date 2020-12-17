@@ -12,7 +12,7 @@
 
 RenderWidget::RenderWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      mesh(Mesh(30, 30, 0.05, 1.0)),
+      mesh(Mesh(30, 30, 0.05, 1.f, 20)),
       program(nullptr) {
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -41,7 +41,7 @@ void RenderWidget::initializeGL()
     initializeOpenGLFunctions();
 
     //Define a cor do fundo
-    glClearColor(0,0,0,1);
+    glClearColor(0.1f,0.1f,0.1f,1);
 
     //Define a viewport
     glViewport(0, 0, width(), height());
@@ -59,14 +59,6 @@ void RenderWidget::initializeGL()
     float ratio = static_cast<float>(width())/height();
     view = glm::lookAt(eye, center, up);
     proj = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
-
-    //Cena de cubos
-//    createCube();
-//    createTexture("../src/cube_texture.png");
-
-    //Cena de esferas
-//    createSphere();
-//    createTexture("../src/sphere_texture.jpg");
 
     createMesh();
 
@@ -111,8 +103,8 @@ void RenderWidget::paintGL()
     QMatrix4x4 p(glm::value_ptr(glm::transpose(proj)));
 
     //Passar as uniformes da luz e do material
-    program.setUniformValue("light.position", v*QVector3D(5,9,-5) );
-    program.setUniformValue("material.ambient", QVector3D(0.1f,0.1f,0.1f));
+    program.setUniformValue("light.position", v*QVector3D(0,-1,-5) );
+    program.setUniformValue("material.ambient", QVector3D(0.15f,0.15f,0.15f));
     program.setUniformValue("material.diffuse", QVector3D(1.0f,0.5f,1.0f));
     program.setUniformValue("material.specular", QVector3D(1.0f,1.0f,1.0f));
     program.setUniformValue("material.shininess", 24.0f);
@@ -123,7 +115,7 @@ void RenderWidget::paintGL()
 //    program.setUniformValue("sampler", 0);
 
     //Passar as matrizes mv e mvp
-    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(0.15f))));
+    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(.15f))));
 
     //QMatrix4x4 mv = v * m * sphereModel;
     QMatrix4x4 mv = v * scale * m;
@@ -250,8 +242,8 @@ void RenderWidget::createMesh()
 void RenderWidget::updateMesh()
 {
     QTime time = QTime::currentTime();
-    float sin_t = glm::sin(0.05*time.msecsSinceStartOfDay());
-    mesh.oneStep(0.02, 0.02, glm::vec3(1.0f, -10.0f, 1.0f));
+    float sin_t = glm::sin(0.5*time.msecsSinceStartOfDay());
+    mesh.oneStep(1./60., 0.02, glm::vec3(0.0, -10.0f, 10.0f * sin_t));
     int n = mesh.n, m = mesh.m;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
@@ -290,117 +282,6 @@ void RenderWidget::updateMesh()
     memcpy(ptr, &vbo[0], vbo.size() * sizeof(vertex));
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
-
-void RenderWidget::createCube()
-{
-    //Definir vértices, normais e índices
-    vertices = {
-        { -1, -1, -1 }, { -1, -1, -1 }, { -1, -1, -1 },
-        { +1, -1, -1 }, { +1, -1, -1 }, { +1, -1, -1 },
-        { +1, -1, +1 }, { +1, -1, +1 }, { +1, -1, +1 },
-        { -1, -1, +1 }, { -1, -1, +1 }, { -1, -1, +1 },
-        { -1, +1, -1 }, { -1, +1, -1 }, { -1, +1, -1 },
-        { +1, +1, -1 }, { +1, +1, -1 }, { +1, +1, -1 },
-        { +1, +1, +1 }, { +1, +1, +1 }, { +1, +1, +1 },
-        { -1, +1, +1 }, { -1, +1, +1 }, { -1, +1, +1 }
-    };
-    
-    normals = {
-        {  0, -1,  0 }, { -1,  0,  0 }, {  0,  0, -1 },
-        {  0, -1,  0 }, { +1,  0,  0 }, {  0,  0, -1 },
-        {  0, -1,  0 }, { +1,  0,  0 }, {  0,  0, +1 },
-        {  0, -1,  0 }, { -1,  0,  0 }, {  0,  0, +1 },
-        { -1,  0,  0 }, {  0,  0, -1 }, {  0, +1,  0 },
-        { +1,  0,  0 }, {  0,  0, -1 }, {  0, +1,  0 },
-        { +1,  0,  0 }, {  0,  0, +1 }, {  0, +1,  0 },
-        { -1,  0,  0 }, {  0,  0, +1 }, {  0, +1,  0 }
-    };
-
-//    texCoords = {
-//        {0.25, 0.50}, {0.25, 0.50}, {0.50, 0.75},
-//        {0.00, 0.50}, {1.00, 0.50}, {0.75, 0.75},
-//        {0.00, 0.25}, {1.00, 0.25}, {0.75, 0.00},
-//        {0.25, 0.25}, {0.25, 0.25}, {0.50, 0.00},
-//        {0.50, 0.50}, {0.50, 0.50}, {0.50, 0.50},
-//        {0.75, 0.50}, {0.75, 0.50}, {0.75, 0.50},
-//        {0.75, 0.25}, {0.75, 0.25}, {0.75, 0.25},
-//        {0.50, 0.25}, {0.50, 0.25}, {0.50, 0.25}
-//    };
-
-    indices = {
-        0,   3,  6, //normal: (  0, -1,  0 )
-        0,   6,  9, //normal: (  0, -1,  0 )
-        12,  1, 10, //normal: ( -1,  0,  0 )
-        12, 10, 21, //normal: ( -1,  0,  0 )
-        18,  7,  4, //normal: ( +1,  0,  0 )
-        18,  4, 15, //normal: ( +1,  0,  0 )
-        22, 11,  8, //normal: (  0,  0, +1 )
-        22,  8, 19, //normal: (  0,  0, +1 )
-        16,  5,  2, //normal: (  0,  0, -1 )
-        16,  2, 13, //normal: (  0,  0, -1 )
-        23, 20, 17, //normal: (  0, +1,  0 )
-        23, 17, 14  //normal: (  0, +1,  0 )
-    };
-}
-
-
-void RenderWidget::createSphere()
-{
-    const int n = 100;
-    const int m = 100;
-
-    const int numTriangles = 2 * n * m;
-
-    for( unsigned int i = 0; i <= n; i++ )
-    {
-        for( unsigned int j = 0; j <= m; j++ )
-        {
-            //Atualizar as coordenadas de textura
-            double s = static_cast<double>(i) / n;
-            double t = static_cast<double>(j) / m;
-            texCoords.push_back(glm::vec2(s,t));
-
-            //Calcula os parâmetros
-            double theta = 2 * s * M_PI;
-            double phi = t * M_PI;
-            double sinTheta = sin( theta );
-            double cosTheta = cos( theta );
-            double sinPhi = sin( phi );
-            double cosPhi = cos( phi );
-
-            //Calcula os vértices == equacao da esfera
-            vertices.push_back( glm::vec3(cosTheta * sinPhi,
-                                          cosPhi,
-                                          sinTheta * sinPhi) );
-        }
-    }
-
-    normals = vertices;
-
-    indices.resize(numTriangles*3);
-
-    auto getIndex = [=]( unsigned int i, unsigned int j, unsigned int s )
-    {
-        return j + i * ( s + 1 );
-    };
-
-    //Preenche o vetor com a triangulação
-    unsigned int k = 0;
-    for( unsigned int i = 0; i < n; i++ )
-    {
-        for( unsigned int j = 0; j < m; j++ )
-        {
-            indices[ k++ ] = getIndex( i, j, n );
-            indices[ k++ ] = getIndex( i + 1, j + 1, n );
-            indices[ k++ ] = getIndex( i + 1, j, n );
-
-            indices[ k++ ] = getIndex( i, j, n );
-            indices[ k++ ] = getIndex( i, j + 1, n );
-            indices[ k++ ] = getIndex( i + 1, j + 1, n );
-        }
-    }
-}
-
 
 void RenderWidget::createVBO()
 {
@@ -465,4 +346,3 @@ void RenderWidget::createTexture(const std::string& imagePath)
 
     glGenerateMipmap(GL_TEXTURE_2D);
 }
-

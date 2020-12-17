@@ -1,17 +1,13 @@
 #include "bar.h"
 #include <glm/glm.hpp>
 
-Bar::Bar(Particle &p1, Particle &p2, float length, float tolerance) 
-    : p1(p1), p2(p2), length(length), tolerance(tolerance) { }
+Bar::Bar(Particle &p1, Particle &p2, float length)
+    : p1(p1), p2(p2), length(length) { }
 
-bool Bar::update() {
+void Bar::update() {
     glm::vec3 direction = p1.position - p2.position;
     float distance = glm::length(direction);
     float adjust = length - distance;
-
-    if (fabs(adjust) < tolerance) {
-        return true;
-    }
 
     direction /= distance;
     if (!p1.isFixed && !p2.isFixed) {
@@ -22,5 +18,4 @@ bool Bar::update() {
     } else if (!p2.isFixed) {
         p2.position += adjust * (-direction);
     }
-    return false;
 }

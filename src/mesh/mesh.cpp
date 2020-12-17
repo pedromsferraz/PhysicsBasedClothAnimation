@@ -14,30 +14,31 @@ void Mesh::createBarIfNotExist(int n, int m, int i, int j, int k, int l) {
     edge e = {{i, j}, {k, l}};
     if (inBounds(n, m, k, l) && edges.find(e) == edges.end()) {
         float distance = glm::length(particles[i][j].position - particles[k][l].position);
-        Bar bar = Bar(particles[i][j], particles[k][l], distance, tolerance);
+        Bar bar = Bar(particles[i][j], particles[k][l], distance);
         this->bars.push_back(bar);
         edges.insert(e);
     }
 }
 
-Mesh::Mesh(int n, int m, float mass, float barLength) {
+Mesh::Mesh(int n, int m, float mass, float barLength, int n_relaxations) {
     Particle p = Particle(mass, glm::vec3(0.0f), false);
     particles.assign(n, std::vector<Particle>(m, p));
-    previousParticles.assign(n, std::vector<Particle>(m, p));
     this->force = glm::vec3(0.0f);
     this->n = n;
     this->m = m;
+    this->n_relaxations = n_relaxations;
 
     glm::vec3 initialPosition = glm::vec3(-(0.5f * (n-1.0f)) * (barLength), -(0.5f * (m-1.0f)) * (barLength), 0.0f);
 
+    particles[0][m-1].isFixed = true;
+    particles[n-1][m-1].isFixed = true;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
-            particles[0][j].isFixed = true;
-            previousParticles[0][j].isFixed = true;
+//            particles[0][j].isFixed = true;
             particles[i][j].position = initialPosition + glm::vec3((1.0f * i) * (barLength), 
                                                                     (1.0f * j) * (barLength), 
                                                                      0.0f );
-            previousParticles[i][j].position = particles[i][j].position;
+            particles[i][j].previousPosition = particles[i][j].position;
         }
     }
 
@@ -69,28 +70,24 @@ void Mesh::setForce(glm::vec3 force) {
 }
 
 void Mesh::oneStep(float h, float delta, glm::vec3 force) {
-    bool isDone = false;
-
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
             if (particles[i][j].isFixed)
                 continue;
             glm::vec3 pos = particles[i][j].position;
-            glm::vec3 prevPos = previousParticles[i][j].position;
+            glm::vec3 prevPos = particles[i][j].previousPosition;
             float mass = particles[i][j].mass;
             pos = pos + (1.0f - delta) * (pos - prevPos) + ((h*h) / mass) * force;
+            particles[i][j].previousPosition = particles[i][j].position;
             particles[i][j].position = pos;
         }
     }
 
-    for (int i = 0; !isDone && i < 20; ++i) {
-        isDone = true;
+    for (int i = 0; i < n_relaxations; ++i) {
         for (auto &bar : bars) {
-            bool isRelaxed = bar.update();
-            isDone = isDone && isRelaxed;
+            bar.update();
         }
     }
-    previousParticles = particles;
 }
 
 void Mesh::oneStep(float h, float delta) {

@@ -2,6 +2,7 @@
 
 struct Particle {
     float mass;
+    glm::vec3 previousPosition;
     glm::vec3 position;
     bool isFixed;
 

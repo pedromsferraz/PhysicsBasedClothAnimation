@@ -4,24 +4,14 @@
 #include <set>
 #include "bar.h"
 
-using edge = std::pair<std::pair<int, int>, std::pair<int, int> >;
-
 class Mesh {
+public:
     std::vector<Bar> bars;
-    std::set<edge> edges;
     glm::vec3 force;
     int n_relaxations;
     float h;
     float delta;
 
-    bool inBounds(int n, int m, int i, int j);
-    void createBarIfNotExist(int n, int m, int i, int j, int k, int l);
-
-public:
-    int n, m;
-    std::vector<std::vector<Particle> > particles;
-
-    Mesh(int n, int m, float mass, float barLength, int n_relaxations, float h, float delta, glm::vec3 force, glm::vec3 initialVelocity);
     void setForce(glm::vec3 force);
     void oneStep();
     void oneStep(float h, float delta, glm::vec3 force);

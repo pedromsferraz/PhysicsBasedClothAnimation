@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "glm/glm.hpp"
-#include "mesh/mesh.h"
+#include "mesh/rectangularmesh.h"
 
 class RenderWidget
         : public QOpenGLWidget
@@ -43,7 +43,7 @@ private:
     glm::vec3 up;
 
     // Mesh
-    Mesh mesh;
+    RectangularMesh mesh;
 
     // Arcball
     int radius;

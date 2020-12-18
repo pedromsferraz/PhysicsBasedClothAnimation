@@ -31,15 +31,19 @@ DISTFILES += \
 
 HEADERS += \
     mesh/bar.h \
+    mesh/genericmesh.h \
     mesh/mesh.h \
     mesh/particle.h \
+    mesh/rectangularmesh.h \
     renderwidget.h \
     mainwindow.h
 
 SOURCES += \
     mesh/bar.cpp \
+    mesh/genericmesh.cpp \
     mesh/mesh.cpp \
     mesh/particle.cpp \
+    mesh/rectangularmesh.cpp \
     renderwidget.cpp \
     mainwindow.cpp \
     main.cpp

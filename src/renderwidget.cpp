@@ -13,7 +13,7 @@
 
 RenderWidget::RenderWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      mesh(Mesh(30, 30, 0.2f, 1.f, 20, 0.05, 0.02, glm::vec3(0.0f), glm::vec3(0.0f))),
+      mesh(RectangularMesh(30, 30, 0.2f, 1.f, 20, 0.05, 0.02, glm::vec3(0.0f), glm::vec3(0.0f))),
       program(nullptr) {
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));

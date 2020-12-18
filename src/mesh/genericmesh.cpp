@@ -2,6 +2,12 @@
 #include <iostream>
 #include <vector>
 
+// Class that represents a generic mesh. Constains an adjacency
+// list (meshGraph) in which each index has the adjacent particles
+// of particle_list's i_th particle, a list of particles which
+// each index i has a particle, the number of relaxations each
+// bar does per step, the damping coefficient, the force that acts
+// on the mesh and each particle's initial velocity.
 GenericMesh::GenericMesh(std::vector<std::vector<int> > &meshGraph,
                          std::vector<Particle> &particle_list,
                          int n_relaxations,
@@ -47,6 +53,9 @@ void GenericMesh::DFS(std::vector<std::vector<int> > &adj, std::vector<Particle>
             DFSUtil(v, adj, particles, visited);
 }
 
+
+// Receives the step, the damping coefficient and the force that acts on the mesh
+// and calculates the next position of each particle.
 void GenericMesh::oneStep(float h, float delta, glm::vec3 force) {
     for (Particle particle : particles) {
         if (particle.isFixed)
@@ -66,6 +75,7 @@ void GenericMesh::oneStep(float h, float delta, glm::vec3 force) {
     }
 }
 
+// Implementation of oneStep without receiving paramenters.
 void GenericMesh::oneStep() {
     oneStep(this->h, this->delta, this->force);
 }

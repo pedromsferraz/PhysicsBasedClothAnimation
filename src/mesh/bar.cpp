@@ -1,9 +1,11 @@
 #include "bar.h"
 #include <glm/glm.hpp>
 
+// Builder responsible for creating the bar.
 Bar::Bar(Particle &p1, Particle &p2, float length)
     : p1(p1), p2(p2), length(length) { }
 
+// Method responsible for bar relaxation.
 void Bar::update() {
     glm::vec3 direction = p1.position - p2.position;
     float distance = glm::length(direction);

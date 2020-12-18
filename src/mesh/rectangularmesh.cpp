@@ -5,10 +5,14 @@
 
 using edge = std::pair<std::pair<int, int>, std::pair<int, int> >;
 
+// Checks whether given indexes are in expected proportions.
 bool RectangularMesh::inBounds(int n, int m, int i, int j) {
     return i >= 0 && i < n && j >= 0 && j < m;
 }
 
+// Receives two pairs of coordinates ( (n, m) and (i, j) ) and checks
+// whether an edge with those already exists.
+// Edges are used to avoid creating two identical bars.
 void RectangularMesh::createBarIfNotExist(int n, int m, int i, int j, int k, int l) {
     edge e = {{i, j}, {k, l}};
     if (inBounds(n, m, k, l) && edges.find(e) == edges.end()) {
@@ -19,6 +23,9 @@ void RectangularMesh::createBarIfNotExist(int n, int m, int i, int j, int k, int
     }
 }
 
+// Rectangular mesh constructor. Creates a nxm mesh, receiving the mass to create the particles, the number
+// of relaxations that each bar does per step, the step size, the damping coefficient,
+// the force that acts on the mesh and the initial velocity of all non fix mesh particles.
 RectangularMesh::RectangularMesh(int n, int m,
                                  float mass,
                                  float barLength,
@@ -77,6 +84,8 @@ RectangularMesh::RectangularMesh(int n, int m,
     }
 }
 
+// Receives the step, the damping coefficient and the force that acts on the mesh
+// and calculates the next position of each particle.
 void RectangularMesh::oneStep(float h, float delta, glm::vec3 force) {
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
@@ -98,6 +107,8 @@ void RectangularMesh::oneStep(float h, float delta, glm::vec3 force) {
     }
 }
 
+
+// Sets the force that acts on the mesh.
 void RectangularMesh::oneStep() {
     oneStep(this->h, this->delta, this->force);
 }

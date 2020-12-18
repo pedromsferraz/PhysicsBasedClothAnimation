@@ -11,6 +11,7 @@ public:
 
     std::vector<Particle> particles;
 
+    // Generic mesh constructor
     GenericMesh(std::vector<std::vector<int> > &meshGraph,
                 std::vector<Particle> &particle_list,
                 int n_relaxations,
@@ -18,6 +19,11 @@ public:
                 float delta,
                 glm::vec3 force,
                 glm::vec3 initialVelocity);
+
+    // Implementation of oneStep without receiving paramenters.
     void oneStep();
+
+    // Receives the step, the damping coefficient and the force that acts on the mesh
+    // and calculates the next position of each particle.
     void oneStep(float h, float delta, glm::vec3 force);
 };

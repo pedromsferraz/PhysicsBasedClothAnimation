@@ -13,7 +13,7 @@
 
 RenderWidget::RenderWidget(QWidget *parent)
     : QOpenGLWidget(parent),
-      mesh(RectangularMesh(30, 30, 0.2f, 1.f, 20, 0.05, 0.02, glm::vec3(0.0f), glm::vec3(0.0f))),
+      mesh(RectangularMesh(30, 20, 0.2f, 1.f, 20, 0.05, 0.02, glm::vec3(0.0f), glm::vec3(0.0f))),
       program(nullptr) {
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -47,9 +47,15 @@ void RenderWidget::initializeGL()
     // Define viewport
     glViewport(0, 0, width(), height());
 
+    QString vertexPath = PROJECT_PATH;
+    vertexPath += "vertexshader.glsl";
+
+    QString fragmentPath = PROJECT_PATH;
+    fragmentPath += "fragmentshader.glsl";
+
     // Compile shaders
-    program.addShaderFromSourceFile(QOpenGLShader::Vertex, "/Users/pedroferraz/Documents/Repositorios/Analise-Numerica-Tecido/src/vertexshader.glsl");
-    program.addShaderFromSourceFile(QOpenGLShader::Fragment, "/Users/pedroferraz/Documents/Repositorios/Analise-Numerica-Tecido/src/fragmentshader.glsl");
+    program.addShaderFromSourceFile(QOpenGLShader::Vertex, vertexPath);
+    program.addShaderFromSourceFile(QOpenGLShader::Fragment, fragmentPath);
     program.link();
 
     // Configure camera
@@ -73,13 +79,20 @@ void RenderWidget::initializeGL()
     moving = true;
 }
 
-
+float mean_time = 0;
+float mean_fps = 0;
 void RenderWidget::paintGL()
 {
     if (m_frameCount == 0) {
          m_time.start();
     } else {
-        qDebug() << "time: " << m_time.elapsed() / (1000.0f * float(m_frameCount));
+        float time = m_time.elapsed() / (1000.0f * float(m_frameCount));
+        float fps = 1.0 / time;
+        mean_time += time;
+        mean_fps += fps;
+//        qDebug() << "Time: " << time << " - FPS: " << fps;
+        if (m_frameCount == 1000)
+            qDebug() << "Mean time: " << mean_time / float(m_frameCount) << " - Mean FPS: " << mean_fps / float(m_frameCount);
     }
     m_frameCount++;
 
@@ -115,7 +128,7 @@ void RenderWidget::paintGL()
 //    program.setUniformValue("sampler", 0);
 
     // Scale matrix for resizing mesh
-    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(.15f))));
+    QMatrix4x4 scale(glm::value_ptr(glm::scale(glm::vec3(.2f))));
 
     // Pass mv and mvp matrices
     // QMatrix4x4 mv = v * m * sphereModel;
@@ -243,7 +256,10 @@ void RenderWidget::updateMesh()
 {
     QTime time = QTime::currentTime();
     float sin_t = glm::sin(0.5*time.msecsSinceStartOfDay());
-    mesh.setForce(glm::vec3(0.0, -10.0f, 10.0f * sin_t));
+
+    glm::vec3 gravity = glm::vec3(0.0f, -9.8f, 0.0f);
+    glm::vec3 wind = glm::vec3(5.0f + 2.0f*sin_t, 6.0f + 6.0f*sin_t, -2.0f+sin_t);
+    mesh.setForce(gravity+wind);
     mesh.oneStep();
 
     int n = mesh.n, m = mesh.m;

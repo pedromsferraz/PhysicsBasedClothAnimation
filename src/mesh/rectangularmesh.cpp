@@ -46,10 +46,9 @@ RectangularMesh::RectangularMesh(int n, int m,
 
     glm::vec3 initialPosition = glm::vec3(-(0.5f * (n-1.0f)) * (barLength), -(0.5f * (m-1.0f)) * (barLength), 0.0f);
 
-    particles[0][m-1].isFixed = true;
-    particles[n-1][m-1].isFixed = true;
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
+            particles[0][j].isFixed = true;
             particles[i][j].previousPosition = initialPosition + glm::vec3((1.0f * i) * (barLength),
                                                                            (1.0f * j) * (barLength),
                                                                            0.0f );

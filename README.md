@@ -39,4 +39,4 @@ Waldemar Celes, for teaching the Numerical Analysis class at PUC-Rio.
 
 Marcelo Gattass, for teaching the Computer Graphics class at PUC-Rio.
 
-Sullen Motta, for the excelent introduction to OpenGL using Qt Creator.
+Suellen Motta, for the excelent introduction to OpenGL using Qt Creator.
